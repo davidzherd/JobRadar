@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireStage } from "@/lib/auth/session";
 import { signout } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { sendCv } from "./actions";
 
 interface Job {
@@ -96,6 +97,7 @@ export default async function DashboardPage() {
               Admin
             </Link>
           )}
+          <ThemeToggle />
           <form action={signout}>
             <button className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">Sign out</button>
           </form>

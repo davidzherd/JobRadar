@@ -1,8 +1,43 @@
 @import "tailwindcss";
 
+/* Theme strategy: default follows the OS (prefers-color-scheme); an explicit
+   choice is stamped as data-theme="light|dark" on <html> and wins. The `dark:`
+   utility fires for an explicit dark, OR system-dark unless forced light. */
+@custom-variant dark {
+  &:where([data-theme="dark"], [data-theme="dark"] *) {
+    @slot;
+  }
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]), :root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --brand: #177e79;
+  --brand-2: #22a39c;
+  --accent: #e0603a;
+}
+
+/* Dark tokens — applied via the OS (unless forced light) and via the toggle. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    --brand: #4ecbc2;
+    --brand-2: #74dbd3;
+    --accent: #f3855f;
+  }
+}
+:root[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --brand: #4ecbc2;
+  --brand-2: #74dbd3;
+  --accent: #f3855f;
 }
 
 @theme inline {
@@ -12,13 +47,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
@@ -26,18 +54,6 @@ body {
 }
 
 /* ---------- Brand + auth design layer ---------- */
-:root {
-  --brand: #177e79;
-  --brand-2: #22a39c;
-  --accent: #e0603a;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --brand: #4ecbc2;
-    --brand-2: #74dbd3;
-    --accent: #f3855f;
-  }
-}
 
 /* Mesh-gradient ground the frosted glass refracts */
 .auth-bg {
@@ -48,13 +64,20 @@ body {
     linear-gradient(180deg, #eef2ef, #e7ecea);
 }
 @media (prefers-color-scheme: dark) {
-  .auth-bg {
+  :root:not([data-theme="light"]) .auth-bg {
     background:
       radial-gradient(46% 40% at 12% 8%, rgba(34, 163, 156, 0.26), transparent 60%),
       radial-gradient(44% 42% at 88% 12%, rgba(224, 96, 58, 0.18), transparent 60%),
       radial-gradient(52% 52% at 80% 92%, rgba(90, 87, 196, 0.24), transparent 60%),
       linear-gradient(180deg, #0b1218, #0e161e);
   }
+}
+:root[data-theme="dark"] .auth-bg {
+  background:
+    radial-gradient(46% 40% at 12% 8%, rgba(34, 163, 156, 0.26), transparent 60%),
+    radial-gradient(44% 42% at 88% 12%, rgba(224, 96, 58, 0.18), transparent 60%),
+    radial-gradient(52% 52% at 80% 92%, rgba(90, 87, 196, 0.24), transparent 60%),
+    linear-gradient(180deg, #0b1218, #0e161e);
 }
 
 /* Frosted glass surface */
@@ -68,13 +91,20 @@ body {
     0 24px 70px rgba(20, 35, 45, 0.18);
 }
 @media (prefers-color-scheme: dark) {
-  .glass-card {
+  :root:not([data-theme="light"]) .glass-card {
     background: rgba(28, 38, 50, 0.55);
     border-color: rgba(255, 255, 255, 0.12);
     box-shadow:
       0 2px 10px rgba(0, 0, 0, 0.35),
       0 28px 80px rgba(0, 0, 0, 0.55);
   }
+}
+:root[data-theme="dark"] .glass-card {
+  background: rgba(28, 38, 50, 0.55);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.35),
+    0 28px 80px rgba(0, 0, 0, 0.55);
 }
 
 /* Radar-scope sweep */

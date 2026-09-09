@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/session";
 import { signout } from "@/app/auth/actions";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface Applicant {
   id: string;
@@ -78,6 +79,7 @@ export default async function AdminPage(props: PageProps<"/admin">) {
           <Link href="/dashboard" className="text-sm text-zinc-500 no-underline hover:text-zinc-800 dark:hover:text-zinc-200">
             Dashboard
           </Link>
+          <ThemeToggle />
           <form action={signout}>
             <button className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">Sign out</button>
           </form>
