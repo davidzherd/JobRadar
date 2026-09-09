@@ -58,7 +58,10 @@ export default async function AdminPage(props: PageProps<"/admin">) {
     .order("onboarded_at", { ascending: false })
     .returns<Applicant[]>();
 
-  const rows = (data ?? []).filter((a) => !a.is_admin);
+  // Everyone who actually applied — admins included. An admin who applied (like
+  // David, user #1) needs their own radar configured here too; a bare admin who
+  // never onboarded matches none of the partitions below, so nothing to filter.
+  const rows = data ?? [];
   const waiting = rows.filter((a) => a.onboarded_at && !a.search_prefs && !a.rejected);
   const live = rows.filter((a) => a.search_prefs && !a.rejected);
   const rejectedRows = rows.filter((a) => a.rejected);
