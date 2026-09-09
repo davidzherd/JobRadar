@@ -69,7 +69,7 @@ export default async function OnboardingPage(props: PageProps<"/onboarding">) {
           <label className={authLabel}>
             Your CV (PDF)
             <span className="text-xs font-normal text-zinc-400">
-              Sent to the team to build your match profile. Not stored. Max 5 MB.
+              Stored privately and sent to the team to build your match profile. PDF, max 5 MB.
             </span>
             <input
               type="file"

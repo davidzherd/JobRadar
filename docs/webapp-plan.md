@@ -24,7 +24,7 @@ them, and track every CV they send in a statistics view. Long term this can beco
 |----------------|---------------------------|-----|
 | Database       | **Supabase (Postgres)**   | Relational data + Auth + Storage + Row Level Security in one service. |
 | Auth           | **Supabase Auth**         | Email/password or magic link; integrates with RLS out of the box. |
-| CV handling    | **Email attachment (v1)** | CV is emailed to the admin at onboarding, **not stored**. Supabase Storage deferred to v2 — see §10. |
+| CV handling    | **Supabase Storage + email** | CV stored in a private `cv` bucket (canonical) **and** attached to the admin email (inbox copy) — see §10. |
 | Admin notify   | **Gmail SMTP (nodemailer)** | Reuses the radar's existing sender to email the admin on registration + onboarding (§10). |
 | Web app        | **Next.js (App Router)**  | Server Components + serverless route handlers where secrets are needed. |
 | Hosting        | **Vercel**                | First-class Next.js host; Vercel Cron available as a fallback scheduler. |
@@ -113,8 +113,8 @@ The dashboard's profile card is **derived** from `target_roles` + `search_prefs`
 the config), so there are no separate user-entered `headline` / `skills` / `experience_summary` columns —
 each field above has exactly one writer, which keeps RLS simple (users never write the gated columns).
 
-> **v1 has no CV column** — the CV is emailed to the admin at onboarding, not stored (§10).
-> Re-add `cv_path` / `cv_uploaded_at` alongside Supabase Storage in v2 if in-app CV features land.
+| `cv_path`            | text        | onboarding | path in the private `cv` Storage bucket (`{user_id}/cv.pdf`) |
+| `cv_uploaded_at`     | timestamptz | onboarding | when the CV was uploaded |
 
 ### `jobs` — the dashboard inbox (max 100/user, radar-managed)
 Only **new, not-yet-applied** jobs. **No workflow status here.**
@@ -230,8 +230,8 @@ It never touches a manually advanced status, so progress is never overwritten.
 **Applying straight from the daily email → tracked links (§8a):**
 The digest's apply links are signed so a click logs the application without any login. Details in §8a.
 
-**CV (onboarding, emailed — no Storage in v1):**
-- Uploaded once during onboarding. The Next.js submit handler **emails the PDF to the admin** as an attachment (§10) instead of writing it to a bucket. No dashboard CV modal in v1.
+**CV (onboarding — stored + emailed):**
+- Uploaded once during onboarding. The Next.js submit handler **uploads it to the private `cv` bucket** (canonical copy) **and emails it to the admin** as an attachment (§10). No dashboard CV modal in v1; in-app download/replace is a later add.
 
 **Onboarding (first login, one-time, never shown again):**
 - Collect the essentials — **name, email, target role(s), languages known, CV**. The submit handler
@@ -261,7 +261,7 @@ load (poll-on-load), and approval additionally sends the user an email (§10).
 3. **Registration is open; access is gated by admin approval (decided 2026-09-09).** Anyone can sign up, but a new account is inert until the admin writes its `search_prefs` (§6) — so there's no signup code. The private-club feel comes from the approval gate, not from gating account creation. (If spam signups ever appear, re-add a code or disable public signup in Supabase.)
 4. **Two tables, not one status field.** `jobs` (dashboard inbox) and `applications` (statistics ledger) are separate; "Send CV" moves a record between them.
 5. **Tracked email apply links (§8a).** Signed per-user tokens let an apply-from-email click log the application with no login — created as **`Unconfirmed`** in a separate top table on Statistics (not counted in totals until the user hits "I sent the CV" → `Pending`). Manual-add form remains the catch-all for truly external platforms.
-6. **CV by email, no Storage in v1 (§10).** The CV is emailed to the admin at onboarding submit; Supabase Storage is deferred to v2. The app has no runtime need for the file — "Send CV" only opens the external listing, where the user attaches their own CV.
+6. **CV stored in Supabase Storage + emailed (§10).** *(Reversed the earlier email-only call, 2026-09-09.)* The onboarding handler uploads the CV to a private `cv` bucket (the canonical, durable copy — enables in-app review via signed URL and future LLM parsing) and also attaches it to the admin email. "Send CV" still just opens the external listing; the stored CV is for review/records, not injected there.
 7. **Access is gated on config presence, with an explicit rejected state.** Routing precedence: `rejected` → Rejected page; else `search_prefs` present → full app; else → Waiting/Onboarding (§6). The admin authoring the config is approval; setting `rejected = true` is decline.
 8. **The user gets one email on approval; nothing else.** No per-job or in-app notifications in v1, and no admin-side dashboard — the admin works from the inbox (§10). Rejection is shown as a page, not emailed.
 
@@ -317,16 +317,17 @@ doesn't inflate stats — see §5 and §8.
 
 - **RLS on every table**, policy `auth.uid() = user_id`. A user physically cannot read another user's rows — enforced in the database, not app code. This is the backbone of multi-tenancy.
 - Service-role key only in GitHub Actions secrets, never shipped to the browser.
-- **v1 has no CV bucket** — the CV is emailed to the admin, so there's no stored-file attack surface. Private-bucket + signed-URL handling returns in v2 only if in-app CV features land (§10).
+- **CV bucket is private, service-role-only.** No policies on `storage.objects` for the `cv` bucket, so anon/authenticated clients can't read it; uploads (onboarding action) and signed-URL reads (admin page) go through the service-role client. Add owner policies only if users get in-app CV download/replace.
 - The onboarding email carries a CV (PII): it goes only to the admin's own address, sent from the app's Gmail. Keep the admin inbox as the trust boundary.
 
 ---
 
-## 10. Registration & onboarding notifications — email, no CV storage (decided)
+## 10. Registration & onboarding notifications — email + CV storage (decided)
 
 Two signals reach the admin (David) by email, reusing the radar's existing **Gmail SMTP / nodemailer**
-sender. This is also what lets v1 **drop Supabase Storage**: the CV travels as an email attachment,
-not into a bucket.
+sender. The CV is **stored in a private `cv` bucket** (canonical copy) **and** attached to the
+onboarding email (inbox copy). *(This reverses the original email-only call — 2026-09-09 — so there's a
+durable, app-readable CV for in-app review, records, and future LLM parsing.)*
 
 **a) Registration heads-up (lightweight).**
 When someone creates an account, email the admin a short "new registration":
@@ -334,28 +335,29 @@ email + timestamp. Informational only — there's nothing to review yet, because
 CV and details don't exist until onboarding.
 
 **b) Onboarding submission (the actionable one — carries the CV).**
-When the user submits onboarding, the Next.js **server route** that handles the submit:
-1. Writes the profile row — `full_name`, `email`, target `role(s)`, `languages`. Leaves `search_prefs` null (pre-active).
+When the user submits onboarding, the Next.js **server action** that handles the submit, in order:
+1. **Uploads the CV** to the private `cv` bucket at `{user_id}/cv.pdf` (service-role client, `upsert`).
 2. **Emails the admin** the submission: name, roles, languages, `user_id`, and the **CV PDF attached**.
-3. Renders the **Waiting** screen.
+3. Writes the profile row — `full_name`, `email`, `role(s)`, `languages`, `cv_path`, `cv_uploaded_at`, `onboarded_at`. Leaves `search_prefs` null (pre-active).
+4. Renders the **Waiting** screen.
+
+Ordering matters: upload → email → advance. If the upload or email fails the user is *not* advanced, so a user in Waiting always means the admin has their CV (in the bucket **and** the inbox).
 
 The admin reviews the email + CV, then either:
 - **Approves** — writes the config JSON to the row (`search_prefs`) → gate opens (§6). **An approval email is sent to the user** ("your radar is live — sign in"). This is decided v1 infra, sent via the same Gmail SMTP sender.
 - **Declines** — sets `rejected = true` (optionally with `rejection_reason`) → the user sees the **Rejected** page on next load. No rejection email in v1.
 
-**Why email instead of Storage**
-- The **only** consumer of the CV is the admin, at review time. "Send CV" (§6) just opens the external
-  listing; the user attaches their own CV there — the app never injects the stored file. Nothing at
-  runtime needs a CV store.
-- Removes the entire Storage surface from v1: no bucket, no per-user bucket RLS, no signed URLs.
-- Reuses infra that already exists (the radar's Gmail SMTP sender).
-- The CV lands exactly where the review happens — the admin's inbox.
+**Why both (store + email)**
+- **Storage** gives a durable, app-readable canonical copy: the admin review page opens it via a
+  short-lived signed URL, it survives inbox deletion, and it's the input for future **LLM CV parsing** (§11).
+- **Email attachment** keeps the convenience of reviewing straight from the inbox and doubles as a backup.
+- Both reuse infra already in place (Storage on the same Supabase project; the radar's Gmail SMTP sender).
 
-**Implication — know what this forecloses**
-- No canonical, app-readable CV. In-app "CV on file / replace CV / download my CV", or server-side
-  **LLM CV parsing** (§11), all need the file server-side — email is a one-way drop. Revisit Storage then.
-- The onboarding **"Replace CV"** affordance and any dashboard CV card are **not in v1**.
-- CV (PII) sits in Gmail rather than a private bucket — both admin-only, roughly equivalent exposure (§9).
+**Notes**
+- Capacity is a non-issue: the free tier's 1 GB bucket holds 1000+ CVs at our 5 MB cap.
+- CV (PII) now lives in two places (private bucket + admin Gmail), both admin-only. The bucket is the
+  system of record; the email copy is a convenience.
+- In-app **download/replace CV** for users is still out of v1 (would need owner policies on the bucket).
 
 **How the user learns their outcome:** two channels, both decided.
 - **Approval:** the app polls on load (Waiting → Dashboard once `search_prefs` appears) **and** the user
@@ -393,7 +395,7 @@ and the admin's destination address.
 
 ## 12. Suggested build order
 
-1. Supabase project: tables + RLS + a seeded test user. **No Storage bucket in v1** — CV goes by email (§10).
+1. Supabase project: tables + RLS + the private `cv` Storage bucket + a seeded test user (§10).
 2. Radar write step (reads `search_prefs`, writes `jobs`) — reuses the existing TS client.
 3. Next.js scaffold on Vercel + Supabase Auth (open signup) + the config-presence access gate (§6).
 4. Onboarding (name/email/role/languages/CV) → submit handler that writes the row and **emails the admin the CV** (§10) → Waiting screen.
