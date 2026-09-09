@@ -1,10 +1,33 @@
 # Job Radar — Web App Architecture Plan
 
-Status: **Planning** · Last updated: 2026-09-09
+Status: **In build** · Last updated: 2026-09-09
 
 This turns the existing Job Radar (Node/TS scraper that emails a daily digest) into a
 multi-user web app: friends register, get a personal dashboard of jobs the radar found for
 them, and track every CV they send in a statistics view. Long term this can become a SaaS.
+
+---
+
+## 0. Build status (2026-09-09)
+
+The app runs in development and everything below is committed to `JobRadar` `main`.
+
+| Area | State | Notes |
+|------|-------|-------|
+| Supabase schema + RLS + `cv` bucket + pg_cron sweep | ✅ | Migrations `0001`–`0005` applied and live. |
+| Auth (email/password) + confirm-email template + middleware | ✅ | `app/auth`, `supabase/email-templates/confirm-signup.html`. |
+| Access gate (`requireStage`/`requireAdmin`, `is_admin` bypass) | ✅ | `lib/auth/session.ts` (§6). |
+| Onboarding → CV to `cv` bucket + admin email → Waiting | ✅ | `app/onboarding` (§10); ordering upload→email→advance. |
+| Waiting / Rejected screens | ✅ | Glassmorphism; Waiting has the animated radar hero. |
+| Admin review console `/admin` + `/admin/[id]` | ✅ | Signed-URL CV, Approve (writes `search_prefs` + approval email) / Reject; admins who applied show in the queue. |
+| Dashboard jobs inbox + Send CV | ✅ | `app/dashboard`; Send CV moves job → `applications` (Pending); animated empty state. |
+| Approval email (branded, dashboard button) | ✅ | Button gated on `NEXT_PUBLIC_APP_URL`. |
+| Light/dark theme switch in navbars | ✅ | `data-theme` override, OS default, no-flash init. |
+| Identity avatars | ✅ | `components/avatar.tsx`; on admin cards/detail, reused on Statistics later. |
+| **Statistics page** (§8) | ⬜ | The `applications` ledger + status pipeline. Not built. |
+| **Radar → Supabase write step** (§6) | ⬜ | Lives in WorkAutomation; the real data source. Until built, the dashboard shows its scanning empty state. |
+| **Tracked email apply links** (§8a) | ⬜ | Not built. |
+| **CV → `search_prefs` authoring tool** | ✅ | `cv-to-profile` Claude Code skill in WorkAutomation (§11) — drafts a config from a CV for the admin to review. |
 
 ---
 
@@ -256,7 +279,7 @@ load (poll-on-load), and approval additionally sends the user an email (§10).
 
 ## 7. Decisions locked in
 
-1. **Skills & experience: manual, no LLM (yet).** Entered by hand into the profile; the CV PDF is just stored for reference. An **Onboarding screen** will collect preferences + skills. LLM parsing is a future upgrade (§9).
+1. **Skills & experience: no in-app LLM (yet).** The admin authors `search_prefs` from the CV + onboarding details — now assisted by the **`cv-to-profile` tool** (a Claude Code skill in WorkAutomation, §11) that drafts a config from the CV for the admin to review before pasting. Fully automated, in-app LLM parsing is still a future upgrade (§11).
 2. **Radar → users: per-user criteria in the DB.** Each profile's `search_prefs` drives what the radar writes for that user. Scales to hundreds of users.
 3. **Registration is open; access is gated by admin approval (decided 2026-09-09).** Anyone can sign up, but a new account is inert until the admin writes its `search_prefs` (§6) — so there's no signup code. The private-club feel comes from the approval gate, not from gating account creation. (If spam signups ever appear, re-add a code or disable public signup in Supabase.)
 4. **Two tables, not one status field.** `jobs` (dashboard inbox) and `applications` (statistics ledger) are separate; "Send CV" moves a record between them.
@@ -374,7 +397,7 @@ and the admin's destination address.
 
 ## 11. Future / out of scope for v1
 
-- **LLM CV parsing** to auto-fill skills/experience (revisit when volume justifies the cost).
+- **LLM CV parsing** to auto-fill skills/experience. A first, admin-in-the-loop version exists as the **`cv-to-profile` Claude Code skill** (`WorkAutomation/.claude/skills/cv-to-profile/`): given a CV (+ the onboarding roles/languages), it drafts a `search_prefs` block against the radar's `SearchProfile` schema and the AllJobs category reference, for the admin to review and paste into the Approve form. The future upgrade is folding this into the app itself (a server-only route that parses on upload), revisited when volume justifies the cost.
 - **Open self-serve signup** + email verification when going public.
 - **Billing** (Stripe) for the SaaS phase.
 - **RTL/Hebrew + English** — use logical CSS (start/end, not left/right) from day one per project convention.
@@ -395,10 +418,12 @@ and the admin's destination address.
 
 ## 12. Suggested build order
 
-1. Supabase project: tables + RLS + the private `cv` Storage bucket + a seeded test user (§10).
-2. Radar write step (reads `search_prefs`, writes `jobs`) — reuses the existing TS client.
-3. Next.js scaffold on Vercel + Supabase Auth (open signup) + the config-presence access gate (§6).
-4. Onboarding (name/email/role/languages/CV) → submit handler that writes the row and **emails the admin the CV** (§10) → Waiting screen.
-5. Dashboard (list + Send CV move).
-6. Statistics (ledger table + manual-add form + widgets).
-7. pg_cron nightly Ignored sweep.
+1. ✅ Supabase project: tables + RLS + the private `cv` Storage bucket (§10). *(Seeded test user still optional.)*
+2. ⬜ Radar write step (reads `search_prefs`, writes `jobs`) — reuses the existing TS client. **← next big piece; the dashboard has no data until this ships.**
+3. ✅ Next.js scaffold + Supabase Auth (open signup) + the config-presence access gate (§6). *(Vercel deploy still pending.)*
+4. ✅ Onboarding (name/email/role/languages/CV) → submit handler that stores + **emails the admin the CV** (§10) → Waiting screen. Plus the **admin review console** (§6) that authors `search_prefs`.
+5. ✅ Dashboard (list + Send CV move).
+6. ⬜ Statistics (ledger table + manual-add form + widgets).
+7. ✅ pg_cron nightly Ignored sweep.
+
+**Also shipped (not in the original order):** light/dark theme switch, identity avatars, the animated waiting/empty-dashboard radar, and the `cv-to-profile` authoring skill (§11).
