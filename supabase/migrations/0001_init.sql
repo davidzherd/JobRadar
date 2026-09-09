@@ -1,6 +1,6 @@
 -- Job Radar — initial schema
 -- Three tables (profiles / jobs / applications) + Row Level Security.
--- See docs/webapp-plan.md (WorkAutomation repo) §4–§9 for the design.
+-- See docs/webapp-plan.md §4–§9 for the design.
 --
 -- Model in one line: `jobs` is the dashboard INBOX (radar-managed, ephemeral);
 -- `applications` is the statistics SENT-FOLDER (user-managed, permanent);

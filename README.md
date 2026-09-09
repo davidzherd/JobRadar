@@ -6,8 +6,8 @@ radar found for them, and track every CV they send. Next.js on Vercel + Supabase
 The **radar** (scraping/scoring/email) lives in a separate repo,
 [WorkAutomation](https://github.com/davidzherd/WorkAutomation). The two integrate through the
 Supabase database — the radar writes each user's `jobs` and reads their `search_prefs`; this app
-does the reverse. This repo **owns the database schema**. Full design: `docs/webapp-plan.md` in
-WorkAutomation.
+does the reverse. This repo **owns the database schema and the full architecture plan**
+([`docs/webapp-plan.md`](docs/webapp-plan.md)).
 
 ## Database schema
 
