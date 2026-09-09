@@ -3,6 +3,7 @@ import { requireStage } from "@/lib/auth/session";
 import { signout } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { RadarScope } from "@/components/radar-scope";
 import { sendCv } from "./actions";
 
 interface Job {
@@ -117,12 +118,17 @@ export default async function DashboardPage() {
         </div>
 
         {jobs.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-black/10 px-6 py-16 text-center dark:border-white/10">
-            <span className="text-3xl text-teal-600/70 dark:text-teal-400/70">◎</span>
-            <h2 className="text-base font-semibold text-zinc-800 dark:text-zinc-100">Your radar is scanning</h2>
-            <p className="max-w-xs text-sm text-zinc-500 dark:text-zinc-400">
-              New matches land here after the next daily run. Nothing to do in the meantime.
-            </p>
+          <div className="flex flex-col items-center gap-4 py-10 text-center">
+            <RadarScope className="size-56" />
+            <div className="flex flex-col gap-1.5">
+              <h2 className="text-base font-semibold text-zinc-800 dark:text-zinc-100">
+                Still scanning for jobs
+              </h2>
+              <p className="max-w-xs text-sm text-zinc-500 dark:text-zinc-400">
+                The radar sweeps the boards once a day. Roles that match your profile will drop in
+                right here — nothing for you to do in the meantime.
+              </p>
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-3">

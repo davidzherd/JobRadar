@@ -1,41 +1,6 @@
 import { requireStage } from "@/lib/auth/session";
 import { signout } from "@/app/auth/actions";
-
-/** Big animated radar scope — the hero of the waiting room. */
-function RadarHero() {
-  return (
-    <svg
-      viewBox="0 0 600 600"
-      className="size-44 flex-none"
-      fill="none"
-      role="img"
-      aria-label="Radar scanning"
-    >
-      <defs>
-        <linearGradient id="sweepFade" x1="300" y1="300" x2="300" y2="30" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="var(--brand)" stopOpacity="0.32" />
-          <stop offset="100%" stopColor="var(--brand)" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-
-      <circle cx="300" cy="300" r="270" stroke="var(--brand)" strokeWidth="1.5" opacity="0.35" />
-      <circle cx="300" cy="300" r="195" stroke="var(--brand)" strokeWidth="1.5" opacity="0.3" />
-      <circle cx="300" cy="300" r="120" stroke="var(--brand)" strokeWidth="1.5" opacity="0.25" />
-      <circle cx="300" cy="300" r="45" stroke="var(--brand)" strokeWidth="1.5" opacity="0.2" />
-      <line x1="30" y1="300" x2="570" y2="300" stroke="var(--brand)" strokeWidth="1" opacity="0.16" />
-      <line x1="300" y1="30" x2="300" y2="570" stroke="var(--brand)" strokeWidth="1" opacity="0.16" />
-
-      <g className="radar-sweep">
-        <path d="M300 300 L300 30 A270 270 0 0 1 505 130 Z" fill="url(#sweepFade)" />
-        <line x1="300" y1="300" x2="300" y2="30" stroke="var(--brand)" strokeWidth="2" opacity="0.55" />
-      </g>
-
-      <circle className="radar-blip" cx="418" cy="205" r="6" fill="var(--accent)" />
-      <circle className="radar-blip radar-blip-2" cx="210" cy="392" r="5" fill="var(--brand-2)" />
-      <circle cx="300" cy="300" r="6" fill="var(--brand)" />
-    </svg>
-  );
-}
+import { RadarScope } from "@/components/radar-scope";
 
 const STEPS = [
   { n: "1", label: "We read your CV", sub: "and the details you sent us" },
@@ -58,7 +23,7 @@ export default async function WaitingPage() {
         </div>
 
         <div className="flex justify-center">
-          <RadarHero />
+          <RadarScope />
         </div>
 
         <span className="mt-6 inline-block rounded-full bg-amber-500/15 px-3 py-1 text-sm font-medium text-amber-700 dark:text-amber-300">
