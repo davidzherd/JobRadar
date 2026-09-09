@@ -258,7 +258,7 @@ load (poll-on-load), and approval additionally sends the user an email (§10).
 
 1. **Skills & experience: manual, no LLM (yet).** Entered by hand into the profile; the CV PDF is just stored for reference. An **Onboarding screen** will collect preferences + skills. LLM parsing is a future upgrade (§9).
 2. **Radar → users: per-user criteria in the DB.** Each profile's `search_prefs` drives what the radar writes for that user. Scales to hundreds of users.
-3. **Registration: invite-only** while it's friends. Open self-serve signup is a later switch.
+3. **Registration is open; access is gated by admin approval (decided 2026-09-09).** Anyone can sign up, but a new account is inert until the admin writes its `search_prefs` (§6) — so there's no signup code. The private-club feel comes from the approval gate, not from gating account creation. (If spam signups ever appear, re-add a code or disable public signup in Supabase.)
 4. **Two tables, not one status field.** `jobs` (dashboard inbox) and `applications` (statistics ledger) are separate; "Send CV" moves a record between them.
 5. **Tracked email apply links (§8a).** Signed per-user tokens let an apply-from-email click log the application with no login — created as **`Unconfirmed`** in a separate top table on Statistics (not counted in totals until the user hits "I sent the CV" → `Pending`). Manual-add form remains the catch-all for truly external platforms.
 6. **CV by email, no Storage in v1 (§10).** The CV is emailed to the admin at onboarding submit; Supabase Storage is deferred to v2. The app has no runtime need for the file — "Send CV" only opens the external listing, where the user attaches their own CV.
@@ -269,7 +269,7 @@ load (poll-on-load), and approval additionally sends the user an email (§10).
 
 ## 8. Pages
 
-- **Auth** — Supabase Auth (email/password or magic link). Invite-only for now.
+- **Auth** — Supabase Auth (email/password or magic link). Open registration; access gated by admin approval (§7.3).
 - **Onboarding** — one-time form (name, email, role(s), languages, CV) → writes `profiles` + emails admin the CV (§10). Never shown again.
 - **Waiting / under review** — shown while onboarded but `search_prefs` is still null (§6). Progress state; polls on load and flips to Dashboard once approved.
 - **Rejected** — shown when `rejected = true` (§6). Explains the profile wasn't approved, with `rejection_reason` if the admin set one. Terminal.
@@ -329,8 +329,8 @@ sender. This is also what lets v1 **drop Supabase Storage**: the CV travels as a
 not into a bucket.
 
 **a) Registration heads-up (lightweight).**
-When someone consumes an invite and creates their account, email the admin a short "new registration":
-email + invite code used + timestamp. Informational only — there's nothing to review yet, because the
+When someone creates an account, email the admin a short "new registration":
+email + timestamp. Informational only — there's nothing to review yet, because the
 CV and details don't exist until onboarding.
 
 **b) Onboarding submission (the actionable one — carries the CV).**
@@ -395,7 +395,7 @@ and the admin's destination address.
 
 1. Supabase project: tables + RLS + a seeded test user. **No Storage bucket in v1** — CV goes by email (§10).
 2. Radar write step (reads `search_prefs`, writes `jobs`) — reuses the existing TS client.
-3. Next.js scaffold on Vercel + Supabase Auth (invite-only) + the config-presence access gate (§6).
+3. Next.js scaffold on Vercel + Supabase Auth (open signup) + the config-presence access gate (§6).
 4. Onboarding (name/email/role/languages/CV) → submit handler that writes the row and **emails the admin the CV** (§10) → Waiting screen.
 5. Dashboard (list + Send CV move).
 6. Statistics (ledger table + manual-add form + widgets).

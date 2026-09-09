@@ -11,7 +11,7 @@ export default async function RegisterPage(props: PageProps<"/register">) {
     <AuthShell>
       <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Create your account</h1>
       <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-        Job Radar is invite-only — enter the code from your invite to join.
+        Sign up to join Job Radar. New accounts are reviewed before the radar is switched on.
       </p>
 
       {pending ? (
@@ -27,16 +27,6 @@ export default async function RegisterPage(props: PageProps<"/register">) {
           )}
 
           <form action={signup} className="mt-5 flex flex-col gap-3">
-            <label className={authLabel}>
-              Invite code
-              <input
-                type="text"
-                name="invite"
-                required
-                placeholder="RADAR-XXXX"
-                className={authInput}
-              />
-            </label>
             <label className={authLabel}>
               Email
               <input type="email" name="email" required autoComplete="email" className={authInput} />

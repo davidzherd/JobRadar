@@ -20,23 +20,14 @@ export async function login(formData: FormData) {
 }
 
 /**
- * Invite-only registration. The invite code is checked server-side against
- * APP_INVITE_CODES (comma-separated) before creating the account. A DB trigger
- * creates the matching `profiles` row (migration 0003).
+ * Registration is open, but access isn't: a new account creates a profile row
+ * (via the DB trigger, migration 0003) that stays pre-active until an admin
+ * writes its `search_prefs`. So signup ≠ access — the approval gate is the real
+ * control, which is why there's no invite code here.
  */
 export async function signup(formData: FormData) {
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  const invite = String(formData.get("invite") ?? "").trim();
-
-  const validCodes = (process.env.APP_INVITE_CODES ?? "")
-    .split(",")
-    .map((c) => c.trim())
-    .filter(Boolean);
-
-  if (!validCodes.includes(invite)) {
-    redirect(`/register?error=${encodeURIComponent("That invite code isn't valid.")}`);
-  }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({ email, password });
