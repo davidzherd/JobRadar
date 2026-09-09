@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { Avatar } from "@/components/avatar";
 import { skeletonPrefs } from "@/lib/admin/prefs-template";
 import { approveApplicant, rejectApplicant } from "../actions";
 
@@ -75,6 +76,7 @@ export default async function ApplicantDetailPage(props: PageProps<"/admin/[id]"
       </Link>
 
       <div className="flex items-center gap-3">
+        <Avatar name={p.full_name} seed={p.id} size={44} />
         <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
           {p.full_name || "Unnamed applicant"}
         </h1>

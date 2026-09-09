@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/auth/session";
 import { signout } from "@/app/auth/actions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Avatar } from "@/components/avatar";
 
 interface Applicant {
   id: string;
@@ -31,6 +32,7 @@ function ApplicantRow({ a, action }: { a: Applicant; action?: boolean }) {
       href={`/admin/${a.id}`}
       className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/60 px-4 py-3 no-underline transition-colors hover:border-teal-500/40 hover:bg-white/90 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
     >
+      <Avatar name={a.full_name} seed={a.id} size={38} />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">
           {a.full_name || "Unnamed"}
