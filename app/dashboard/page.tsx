@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireStage } from "@/lib/auth/session";
 import { signout } from "@/app/auth/actions";
 
@@ -13,6 +14,14 @@ export default async function DashboardPage() {
       <p className="max-w-md text-zinc-500">
         Your radar is live. The dashboard of jobs goes here next.
       </p>
+      {profile.is_admin && (
+        <Link
+          href="/admin"
+          className="rounded-lg bg-teal-600/10 px-4 py-2 text-sm font-semibold text-teal-700 no-underline transition-colors hover:bg-teal-600/20 dark:text-teal-300"
+        >
+          Open admin console →
+        </Link>
+      )}
       <form action={signout}>
         <button className="rounded-lg border border-black/15 px-4 py-2 text-sm font-semibold hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5">
           Sign out
