@@ -106,6 +106,7 @@ Extends Supabase `auth.users`.
 | `search_prefs`       | jsonb       | **admin**  | the per-user radar config (see §4a). **NULL until approved** — this is the access gate (§6) |
 | `rejected`           | boolean     | **admin**  | `true` declines the application → routing shows the **Rejected** page. Default `false` |
 | `rejection_reason`   | text        | **admin**  | optional (nullable) — shown on the Rejected page when present |
+| `is_admin`           | boolean     | **admin**  | `true` unlocks admin-only pages and bypasses the gate. Default `false`; never user-settable (no user UPDATE policy, and the self-INSERT policy is dropped so a user can't self-promote). Granted in the Supabase table editor. |
 | `created_at`         | timestamptz | signup     | default `now()` |
 
 The dashboard's profile card is **derived** from `target_roles` + `search_prefs` (skills/titles from
@@ -239,10 +240,13 @@ The digest's apply links are signed so a click logs the application without any 
   reviews the submission, authors the config JSON, and writes it to the row — see the access gate below.
 
 **Access gate — routing precedence (checked on every load):**
+0. `is_admin = true` → **full app + admin pages**, bypassing the checks below (an admin is never sent to onboarding/waiting).
 1. `rejected = true` → **Rejected** page (terminal; explains the profile wasn't approved, with `rejection_reason` if set).
 2. else `search_prefs` present → **full app** (Dashboard + Statistics).
 3. else onboarding submitted, `search_prefs` null → **Waiting / "under review"**.
 4. else → **Onboarding**.
+
+Implemented in `lib/auth/session.ts`: `requireStage(stage)` guards regular pages (admins always resolve to the app stage); `requireAdmin()` guards admin-only pages and redirects non-admins to the dashboard. Admin reads of *other* users' rows use the service-role client (RLS still blocks cross-user reads for everyone else).
 
 The root layout reads the profile once on load and routes. **Approval** is simply the admin writing
 `search_prefs`; **rejection** is the admin setting `rejected = true`. Both take effect on the user's next
