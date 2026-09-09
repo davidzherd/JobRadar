@@ -26,9 +26,20 @@ export default function Home() {
           : "Set NEXT_PUBLIC_SUPABASE_URL and _ANON_KEY in .env.local"}
       </span>
 
-      <p className="text-sm text-zinc-500">
-        Scaffold ready — screens come next: login, onboarding, dashboard, statistics.
-      </p>
+      <div className="flex gap-3">
+        <a
+          href="/login"
+          className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-teal-700"
+        >
+          Sign in
+        </a>
+        <a
+          href="/register"
+          className="rounded-lg border border-black/15 px-4 py-2 text-sm font-semibold transition-colors hover:bg-black/5 dark:border-white/15 dark:hover:bg-white/5"
+        >
+          Create an account
+        </a>
+      </div>
     </main>
   );
 }
