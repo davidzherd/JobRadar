@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { requireStage } from "@/lib/auth/session";
-import { signout } from "@/app/auth/actions";
 import { createClient } from "@/lib/supabase/server";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AppHeader } from "@/components/app-header";
 import { RadarScope } from "@/components/radar-scope";
 import { sendCv } from "./actions";
 
@@ -86,24 +84,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="flex items-center gap-2 border-b border-black/5 px-5 py-4 dark:border-white/10">
-        <span className="text-lg text-teal-600 dark:text-teal-400">◎</span>
-        <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Job Radar</span>
-        <div className="ms-auto flex items-center gap-4">
-          {profile.is_admin && (
-            <Link
-              href="/admin"
-              className="text-sm text-zinc-500 no-underline hover:text-zinc-800 dark:hover:text-zinc-200"
-            >
-              Admin
-            </Link>
-          )}
-          <ThemeToggle />
-          <form action={signout}>
-            <button className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">Sign out</button>
-          </form>
-        </div>
-      </header>
+      <AppHeader current="dashboard" isAdmin={profile.is_admin} />
 
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-8">
         <div className="mb-6">
