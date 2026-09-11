@@ -138,6 +138,7 @@ each field above has exactly one writer, which keeps RLS simple (users never wri
 
 | `cv_path`            | text        | onboarding | path in the private `cv` Storage bucket (`{user_id}/cv.pdf`) |
 | `cv_uploaded_at`     | timestamptz | onboarding | when the CV was uploaded |
+| `jobs_suggested_total` | integer   | **radar**  | cumulative count of jobs the radar has suggested to this user (Statistics widget). Radar adds each run's found-count; never decremented. Default `0` (migration 0006). |
 
 ### `jobs` — the dashboard inbox (max 100/user, radar-managed)
 Only **new, not-yet-applied** jobs. **No workflow status here.**
@@ -240,6 +241,8 @@ It never touches a manually advanced status, so progress is never overwritten.
 3. Upsert matches into `jobs` under each `user_id`; prune each user back to newest 100 unapplied.
    This is the **only** moment the inbox refills — between runs it only shrinks as the user applies.
    If a user's prefs match nothing, the dashboard shows an **empty state** (acceptable; rare in practice).
+4. Add the run's found-count to `profiles.jobs_suggested_total` (the Statistics "Jobs suggested"
+   widget, migration 0006) — a cumulative counter, since the `jobs` inbox is capped and ephemeral.
 
 **Send CV (dashboard):**
 1. User clicks "Send CV" on a job → open `job.url` in a **new tab**.

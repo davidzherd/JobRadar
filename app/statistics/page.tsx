@@ -65,9 +65,6 @@ export default async function StatisticsPage() {
     .returns<AppRow[]>();
   const rows = data ?? [];
 
-  // Jobs still waiting in the dashboard inbox (radar-managed, ≤100).
-  const { count: openJobs } = await supabase.from("jobs").select("id", { count: "exact", head: true });
-
   const unconfirmed = rows.filter((r) => r.status === "Unconfirmed");
   const confirmed = rows.filter((r) => r.status !== "Unconfirmed");
 
@@ -78,11 +75,9 @@ export default async function StatisticsPage() {
   const inProgress = rows.filter((r) => IN_PROGRESS_STATUSES.includes(r.status)).length;
   const sentLast3 = sent.filter((r) => new Date(r.applied_at) >= cutoff).length;
 
-  // "Jobs suggested" = open inbox + suggested jobs already acted on (a Send CV
-  // moves a radar job into applications; email-link clicks land there too). It
-  // grows as the radar works and doesn't shrink when the user applies.
-  const suggestedActedOn = rows.filter((r) => r.source === "radar" || r.source === "email").length;
-  const jobsSuggested = (openJobs ?? 0) + suggestedActedOn;
+  // Lifetime tally the radar maintains on the profile (see migration 0006);
+  // 0 until the automation's Supabase write step starts incrementing it.
+  const jobsSuggested = profile.jobs_suggested_total;
 
   const breakdown = STATUS_FLOW.map((s) => ({ status: s, count: rows.filter((r) => r.status === s).length }));
 

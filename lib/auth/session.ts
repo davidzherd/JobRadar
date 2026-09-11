@@ -17,6 +17,7 @@ export interface Profile {
   is_admin: boolean;
   cv_path: string | null;
   cv_uploaded_at: string | null;
+  jobs_suggested_total: number;
 }
 
 const ROUTE: Record<Stage, string> = {
@@ -51,7 +52,7 @@ export async function requireStage(expected: Stage): Promise<{ userId: string; p
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, email, target_roles, languages, onboarded_at, search_prefs, rejected, rejection_reason, is_admin, cv_path, cv_uploaded_at",
+      "id, full_name, email, target_roles, languages, onboarded_at, search_prefs, rejected, rejection_reason, is_admin, cv_path, cv_uploaded_at, jobs_suggested_total",
     )
     .eq("id", user.id)
     .single<Profile>();
@@ -74,6 +75,7 @@ export async function requireStage(expected: Stage): Promise<{ userId: string; p
         is_admin: false,
         cv_path: null,
         cv_uploaded_at: null,
+        jobs_suggested_total: 0,
       },
     };
   }
@@ -101,7 +103,7 @@ export async function requireAdmin(): Promise<{ userId: string; profile: Profile
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, email, target_roles, languages, onboarded_at, search_prefs, rejected, rejection_reason, is_admin, cv_path, cv_uploaded_at",
+      "id, full_name, email, target_roles, languages, onboarded_at, search_prefs, rejected, rejection_reason, is_admin, cv_path, cv_uploaded_at, jobs_suggested_total",
     )
     .eq("id", user.id)
     .single<Profile>();
