@@ -27,7 +27,7 @@ export function AppHeader({
   );
 
   return (
-    <header className="flex items-center gap-2 border-b border-black/5 px-5 py-4 dark:border-white/10">
+    <header className="sticky top-0 z-50 flex items-center gap-2 border-b border-black/5 bg-[var(--background)] px-5 py-4 dark:border-white/10">
       <span className="text-lg text-teal-600 dark:text-teal-400">◎</span>
       <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Job Radar</span>
 
