@@ -146,3 +146,21 @@ body {
     opacity: 0.7;
   }
 }
+
+/* Mobile menu: slide down from behind the navbar to the bottom of the screen. */
+@keyframes menu-slide-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.menu-slide-down {
+  animation: menu-slide-down 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-slide-down {
+    animation: none;
+  }
+}
