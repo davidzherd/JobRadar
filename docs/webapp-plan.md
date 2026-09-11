@@ -23,8 +23,8 @@ The app runs in development and everything below is committed to `JobRadar` `mai
 | Dashboard jobs inbox + Send CV | ✅ | `app/dashboard`; Send CV moves job → `applications` (Pending); animated empty state. |
 | Approval email (branded, dashboard button) | ✅ | Button gated on `NEXT_PUBLIC_APP_URL`. |
 | Light/dark theme switch in navbars | ✅ | `data-theme` override, OS default, no-flash init. |
-| Identity avatars | ✅ | `components/avatar.tsx`; on admin cards/detail, reused on Statistics later. |
-| **Statistics page** (§8) | ⬜ | The `applications` ledger + status pipeline. Not built. |
+| Identity avatars | ✅ | `components/avatar.tsx`; on admin cards/detail. |
+| Statistics page (§8) | ✅ | `app/statistics`: widgets, Unconfirmed confirm/dismiss, confirmed ledger with inline status dropdown + delete, manual-add form. Shared `AppHeader` nav. |
 | **Radar → Supabase write step** (§6) | ⬜ | Lives in WorkAutomation; the real data source. Until built, the dashboard shows its scanning empty state. |
 | **Tracked email apply links** (§8a) | ⬜ | Not built. |
 | **CV → `search_prefs` authoring tool** | ✅ | `cv-to-profile` Claude Code skill in WorkAutomation (§11) — drafts a config from a CV for the admin to review. |
@@ -423,7 +423,7 @@ and the admin's destination address.
 3. ✅ Next.js scaffold + Supabase Auth (open signup) + the config-presence access gate (§6). *(Vercel deploy still pending.)*
 4. ✅ Onboarding (name/email/role/languages/CV) → submit handler that stores + **emails the admin the CV** (§10) → Waiting screen. Plus the **admin review console** (§6) that authors `search_prefs`.
 5. ✅ Dashboard (list + Send CV move).
-6. ⬜ Statistics (ledger table + manual-add form + widgets).
+6. ✅ Statistics (ledger + inline status funnel + manual-add form + widgets).
 7. ✅ pg_cron nightly Ignored sweep.
 
-**Also shipped (not in the original order):** light/dark theme switch, identity avatars, the animated waiting/empty-dashboard radar, and the `cv-to-profile` authoring skill (§11).
+**Also shipped (not in the original order):** light/dark theme switch, identity avatars, the animated waiting/empty-dashboard radar, a shared `AppHeader`, and the `cv-to-profile` authoring skill (§11). **The one remaining big piece is the radar → Supabase write step (WorkAutomation) — until it ships, `jobs`/`applications` stay empty in practice.**
