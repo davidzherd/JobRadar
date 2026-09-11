@@ -4,14 +4,10 @@ import { ThemeToggle } from "./theme-toggle";
 import { MobileNav } from "./mobile-nav";
 
 /** Shared top nav for the signed-in app surfaces (Dashboard, Statistics). */
-export function AppHeader({
-  current,
-  isAdmin = false,
-}: {
-  current: "dashboard" | "statistics";
-  isAdmin?: boolean;
-}) {
-  const tab = (href: string, label: string, key: "dashboard" | "statistics") => (
+type Current = "dashboard" | "statistics" | "admin";
+
+export function AppHeader({ current, isAdmin = false }: { current: Current; isAdmin?: boolean }) {
+  const tab = (href: string, label: string, key: Current) => (
     <Link
       href={href}
       className={
@@ -41,7 +37,13 @@ export function AppHeader({
         {isAdmin && (
           <Link
             href="/admin"
-            className="hidden text-sm text-zinc-500 no-underline hover:text-zinc-800 sm:inline dark:hover:text-zinc-200"
+            aria-current={current === "admin" ? "page" : undefined}
+            className={
+              "hidden text-sm no-underline sm:inline " +
+              (current === "admin"
+                ? "font-semibold text-zinc-900 dark:text-zinc-50"
+                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200")
+            }
           >
             Admin
           </Link>

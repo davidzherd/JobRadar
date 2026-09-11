@@ -1,22 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { signout } from "@/app/auth/actions";
 
+type Current = "dashboard" | "statistics" | "admin";
+
 /**
  * Mobile-only (sm:hidden) burger menu. Tapping the burger opens a fullscreen
- * panel below the (sticky) header — the header stays visible so the burger can
- * toggle back to a close (✕). Locks body scroll and closes on Escape.
+ * panel below the (sticky) header. The panel is rendered through a portal to
+ * <body> — the header has a backdrop-filter, which would otherwise become the
+ * containing block for this fixed panel and collapse it. Locks body scroll and
+ * closes on Escape.
  */
-export function MobileNav({
-  current,
-  isAdmin = false,
-}: {
-  current: "dashboard" | "statistics";
-  isAdmin?: boolean;
-}) {
+export function MobileNav({ current, isAdmin = false }: { current: Current; isAdmin?: boolean }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
@@ -46,6 +48,21 @@ export function MobileNav({
     </Link>
   );
 
+  const panel = (
+    <div className="fixed inset-x-0 bottom-0 top-16 z-40 flex flex-col bg-[var(--background)] px-5 py-4">
+      <nav className="flex flex-col">
+        {item("/dashboard", "Dashboard", current === "dashboard")}
+        {item("/statistics", "Statistics", current === "statistics")}
+        {isAdmin && item("/admin", "Admin", current === "admin")}
+      </nav>
+      <form action={signout} className="mt-auto">
+        <button className="w-full rounded-xl border border-black/15 py-3 text-base font-semibold text-zinc-700 transition-colors hover:bg-black/5 dark:border-white/15 dark:text-zinc-200 dark:hover:bg-white/10">
+          Sign out
+        </button>
+      </form>
+    </div>
+  );
+
   return (
     <div className="sm:hidden">
       <button
@@ -60,20 +77,7 @@ export function MobileNav({
         </svg>
       </button>
 
-      {open && (
-        <div className="fixed inset-x-0 bottom-0 top-16 z-40 flex flex-col bg-[var(--background)] px-5 py-4">
-          <nav className="flex flex-col">
-            {item("/dashboard", "Dashboard", current === "dashboard")}
-            {item("/statistics", "Statistics", current === "statistics")}
-            {isAdmin && item("/admin", "Admin", false)}
-          </nav>
-          <form action={signout} className="mt-auto">
-            <button className="w-full rounded-xl border border-black/15 py-3 text-base font-semibold text-zinc-700 transition-colors hover:bg-black/5 dark:border-white/15 dark:text-zinc-200 dark:hover:bg-white/10">
-              Sign out
-            </button>
-          </form>
-        </div>
-      )}
+      {mounted && open && createPortal(panel, document.body)}
     </div>
   );
 }

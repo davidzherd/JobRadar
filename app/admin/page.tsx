@@ -1,8 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/session";
-import { signout } from "@/app/auth/actions";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { AppHeader } from "@/components/app-header";
 import { AppBackground } from "@/components/app-background";
 import { Avatar } from "@/components/avatar";
 
@@ -71,39 +70,27 @@ export default async function AdminPage(props: PageProps<"/admin">) {
   const rejectedRows = rows.filter((a) => a.rejected);
 
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-5 py-10">
+    <div className="flex flex-1 flex-col">
       <AppBackground />
-      <header className="flex items-center gap-2">
-        <span className="text-lg text-teal-600 dark:text-teal-400">◎</span>
-        <span className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Job Radar</span>
-        <span className="rounded-full bg-teal-600/10 px-2 py-0.5 text-xs font-semibold text-teal-700 dark:bg-teal-400/10 dark:text-teal-300">
-          Admin
-        </span>
-        <div className="ms-auto flex items-center gap-4">
-          <Link href="/dashboard" className="text-sm text-zinc-500 no-underline hover:text-zinc-800 dark:hover:text-zinc-200">
-            Dashboard
-          </Link>
-          <ThemeToggle />
-          <form action={signout}>
-            <button className="text-sm text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300">Sign out</button>
-          </form>
-        </div>
-      </header>
+      <AppHeader current="admin" isAdmin />
 
-      {approved && (
-        <p className="rounded-lg bg-teal-500/10 px-3 py-2 text-sm text-teal-700 dark:text-teal-300">
-          Radar switched on for {approved} — a go-live email is on its way.
-        </p>
-      )}
-      {rejected && (
-        <p className="rounded-lg bg-zinc-500/10 px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400">
-          Application rejected.
-        </p>
-      )}
+      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-8 px-5 py-10">
+        <h1 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Review queue</h1>
+
+        {approved && (
+          <p className="rounded-lg bg-teal-500/10 px-3 py-2 text-sm text-teal-700 dark:text-teal-300">
+            Radar switched on for {approved} — a go-live email is on its way.
+          </p>
+        )}
+        {rejected && (
+          <p className="rounded-lg bg-zinc-500/10 px-3 py-2 text-sm text-zinc-600 dark:text-zinc-400">
+            Application rejected.
+          </p>
+        )}
 
       <section className="flex flex-col gap-3">
         <div className="flex items-baseline gap-2">
-          <h1 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Waiting for review</h1>
+          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Waiting for review</h2>
           <span className="text-sm text-zinc-400">{waiting.length}</span>
         </div>
         {waiting.length === 0 ? (
@@ -146,6 +133,7 @@ export default async function AdminPage(props: PageProps<"/admin">) {
           </div>
         </section>
       )}
-    </main>
+      </main>
+    </div>
   );
 }
