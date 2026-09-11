@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Avatar } from "@/components/avatar";
+import { AppBackground } from "@/components/app-background";
 import { skeletonPrefs } from "@/lib/admin/prefs-template";
 import { approveApplicant, rejectApplicant } from "../actions";
 
@@ -71,6 +72,7 @@ export default async function ApplicantDetailPage(props: PageProps<"/admin/[id]"
 
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-5 py-10">
+      <AppBackground />
       <Link href="/admin" className="text-sm text-zinc-500 no-underline hover:text-zinc-800 dark:hover:text-zinc-200">
         ← Back to queue
       </Link>
@@ -98,7 +100,7 @@ export default async function ApplicantDetailPage(props: PageProps<"/admin/[id]"
         <p className="rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">{error}</p>
       )}
 
-      <section className="grid grid-cols-2 gap-4 rounded-2xl border border-black/10 bg-white/60 p-5 dark:border-white/10 dark:bg-white/5">
+      <section className="grid grid-cols-2 gap-4 rounded-2xl border border-black/10 bg-white/60 p-5 backdrop-blur-md dark:border-white/10 dark:bg-white/5">
         <Field label="Email">{p.email || "—"}</Field>
         <Field label="Submitted">{when(p.onboarded_at)}</Field>
         <Field label="Roles">{p.target_roles?.length ? p.target_roles.join(", ") : "—"}</Field>

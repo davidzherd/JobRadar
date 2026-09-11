@@ -1,6 +1,7 @@
 import { requireStage } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/app-header";
+import { AppBackground } from "@/components/app-background";
 import { StatusSelect } from "@/components/status-select";
 import {
   SENT_STATUSES,
@@ -46,7 +47,7 @@ function DeleteButton({ id, label }: { id: string; label: string }) {
 
 function StatTile({ value, label }: { value: number; label: string }) {
   return (
-    <div className="rounded-2xl border border-black/10 bg-white/60 p-4 dark:border-white/10 dark:bg-white/5">
+    <div className="rounded-2xl border border-black/10 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-white/5">
       <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">{value}</div>
       <div className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">{label}</div>
     </div>
@@ -87,6 +88,7 @@ export default async function StatisticsPage() {
 
   return (
     <div className="flex flex-1 flex-col">
+      <AppBackground />
       <AppHeader current="statistics" isAdmin={profile.is_admin} />
 
       <main className="mx-auto w-full max-w-3xl flex-1 px-5 py-8">
@@ -130,7 +132,7 @@ export default async function StatisticsPage() {
               {unconfirmed.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center gap-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.04] px-4 py-3"
+                  className="flex items-center gap-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.06] px-4 py-3 backdrop-blur-md"
                 >
                   <div className="min-w-0 flex-1">
                     <h3 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">{r.title}</h3>
@@ -167,7 +169,7 @@ export default async function StatisticsPage() {
               {confirmed.map((r) => (
                 <div
                   key={r.id}
-                  className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/60 px-4 py-3 dark:border-white/10 dark:bg-white/5"
+                  className="flex items-center gap-3 rounded-xl border border-black/10 bg-white/60 px-4 py-3 backdrop-blur-md dark:border-white/10 dark:bg-white/5"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -199,7 +201,7 @@ export default async function StatisticsPage() {
         </section>
 
         {/* Manual add */}
-        <details className="mt-8 rounded-2xl border border-black/10 p-4 dark:border-white/10">
+        <details className="mt-8 rounded-2xl border border-black/10 bg-white/60 p-4 backdrop-blur-md dark:border-white/10 dark:bg-white/5">
           <summary className="cursor-pointer text-sm font-semibold text-zinc-800 dark:text-zinc-100">
             Log an application sent elsewhere
           </summary>

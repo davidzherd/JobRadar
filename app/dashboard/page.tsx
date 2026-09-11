@@ -1,6 +1,7 @@
 import { requireStage } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 import { AppHeader } from "@/components/app-header";
+import { AppBackground } from "@/components/app-background";
 import { RadarScope } from "@/components/radar-scope";
 import { sendCv } from "./actions";
 
@@ -29,7 +30,7 @@ function ago(iso: string): string {
 
 function JobCard({ job }: { job: Job }) {
   return (
-    <article className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white/70 p-4 transition-colors hover:border-teal-500/30 dark:border-white/10 dark:bg-white/5">
+    <article className="flex items-center gap-4 rounded-2xl border border-black/10 bg-white/70 p-4 backdrop-blur-md transition-colors hover:border-teal-500/30 dark:border-white/10 dark:bg-white/5">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <h3 className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-50">{job.title}</h3>
@@ -84,6 +85,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-1 flex-col">
+      <AppBackground />
       <AppHeader current="dashboard" isAdmin={profile.is_admin} />
 
       <main className="mx-auto w-full max-w-2xl flex-1 px-5 py-8">
