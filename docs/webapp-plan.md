@@ -25,7 +25,7 @@ The app runs in development and everything below is committed to `JobRadar` `mai
 | Light/dark theme switch in navbars | ✅ | `data-theme` override, OS default, no-flash init. |
 | Identity avatars | ✅ | `components/avatar.tsx`; on admin cards/detail. |
 | Statistics page (§8) | ✅ | `app/statistics`: widgets, Unconfirmed confirm/dismiss, confirmed ledger with inline status dropdown + delete, manual-add form. Shared `AppHeader` nav. |
-| **Radar → Supabase write step** (§6) | ⬜ | Lives in WorkAutomation; the real data source. Until built, the dashboard shows its scanning empty state. |
+| Radar → Supabase write step (§6) | ✅ | WorkAutomation `src/db/*` + `--source=supabase`: loads approved users from `profiles`, writes matched jobs to each `jobs` inbox, bumps `jobs_suggested_total`. Needs `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` in the radar env; email delivery continues. |
 | **Tracked email apply links** (§8a) | ⬜ | Not built. |
 | **CV → `search_prefs` authoring tool** | ✅ | `cv-to-profile` Claude Code skill in WorkAutomation (§11) — drafts a config from a CV for the admin to review. |
 
@@ -422,11 +422,11 @@ and the admin's destination address.
 ## 12. Suggested build order
 
 1. ✅ Supabase project: tables + RLS + the private `cv` Storage bucket (§10). *(Seeded test user still optional.)*
-2. ⬜ Radar write step (reads `search_prefs`, writes `jobs`) — reuses the existing TS client. **← next big piece; the dashboard has no data until this ships.**
+2. ✅ Radar write step (reads `search_prefs`, writes `jobs` + `jobs_suggested_total`) — WorkAutomation `src/db/*`, selected with `--source=supabase` / `USER_SOURCE=supabase`. Set `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` in the radar env to turn it on.
 3. ✅ Next.js scaffold + Supabase Auth (open signup) + the config-presence access gate (§6). *(Vercel deploy still pending.)*
 4. ✅ Onboarding (name/email/role/languages/CV) → submit handler that stores + **emails the admin the CV** (§10) → Waiting screen. Plus the **admin review console** (§6) that authors `search_prefs`.
 5. ✅ Dashboard (list + Send CV move).
 6. ✅ Statistics (ledger + inline status funnel + manual-add form + widgets).
 7. ✅ pg_cron nightly Ignored sweep.
 
-**Also shipped (not in the original order):** light/dark theme switch, identity avatars, the animated waiting/empty-dashboard radar, a shared `AppHeader`, and the `cv-to-profile` authoring skill (§11). **The one remaining big piece is the radar → Supabase write step (WorkAutomation) — until it ships, `jobs`/`applications` stay empty in practice.**
+**Also shipped (not in the original order):** light/dark theme switch, identity avatars, the animated waiting/empty-dashboard radar, a shared `AppHeader`, and the `cv-to-profile` authoring skill (§11). **Remaining: deploy to Vercel (set the real `NEXT_PUBLIC_APP_URL`), the tracked email apply-links (§8a), and turning the radar's Supabase mode on in production (set its env + `USER_SOURCE=supabase`).**
